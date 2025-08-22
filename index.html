@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>University Course Registration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#0f172a;           /* slate-900 */
+      --card:#111827;         /* gray-900 */
+      --muted:#94a3b8;        /* slate-400 */
+      --text:#e5e7eb;         /* gray-200 */
+      --accent:#38bdf8;       /* sky-400 */
+      --danger:#ef4444;       /* red-500 */
+      --success:#22c55e;      /* green-500 */
+      --ring:rgba(56,189,248,.35);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background: radial-gradient(1200px 800px at 80% -10%, #0b1220 0%, var(--bg) 40%, #060913 100%);
+      color:var(--text); display:flex; align-items:center; justify-content:center; padding:32px;
+    }
+    .container{
+      width:min(980px, 92vw); display:grid; grid-template-columns: 1.15fr .85fr; gap:28px;
+    }
+    .card{
+      background:linear-gradient(180deg,#0e1426 0%, #0b1220 100%);
+      border:1px solid rgba(148,163,184,.12);
+      border-radius:var(--radius);
+      box-shadow:0 20px 35px rgba(2,6,23,.45), inset 0 1px 0 rgba(255,255,255,.03);
+      padding:26px;
+    }
+    h1{margin:0 0 8px; font-size:clamp(22px,2.6vw,30px); letter-spacing:.3px}
+    p.lead{margin:0 0 18px; color:var(--muted)}
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+    label{display:block; font-size:14px; color:#cbd5e1; margin:6px 0 8px}
+    input[type="text"], input[type="email"], select, .checkboxes{
+      width:100%; background:#0b1220; color:var(--text); border:1px solid rgba(148,163,184,.18);
+      border-radius:14px; padding:12px 14px; outline:none; transition:border .2s, box-shadow .2s, transform .06s;
+    }
+    input:focus, select:focus, .checkboxes:focus-within{
+      border-color:var(--accent); box-shadow:0 0 0 6px var(--ring);
+    }
+    .checkboxes{padding:12px 14px}
+    .checkboxes label{display:flex; align-items:center; gap:10px; margin:6px 0; font-weight:500}
+    .actions{display:flex; gap:12px; margin-top:14px}
+    button{
+      appearance:none; border:none; cursor:pointer; padding:12px 16px; border-radius:14px; font-weight:700;
+      background:linear-gradient(180deg, #38bdf8, #0284c7); color:#04121b; letter-spacing:.2px;
+      box-shadow:0 10px 25px rgba(2,132,199,.35); transition:transform .08s ease, filter .2s ease;
+    }
+    button:hover{filter:saturate(1.15)}
+    button:active{transform:translateY(1px)}
+    .muted-btn{background:#0b1220; color:#cbd5e1; border:1px solid rgba(148,163,184,.25)}
+    .notice{margin-top:12px; padding:12px 14px; border-radius:12px; font-size:14px; display:none}
+    .notice.error{display:block; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.35); color:#fecaca}
+    .notice.success{display:block; background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.35); color:#bbf7d0}
+    .sidebar .course{
+      display:flex; flex-direction:column; gap:8px; padding:14px; border-radius:14px;
+      background:#0b1220; border:1px solid rgba(148,163,184,.18);
+    }
+    .meta{display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:#a5b4fc}
+    .pill{
+      padding:4px 8px; border-radius:999px; border:1px solid rgba(148,163,184,.25);
+      background:rgba(148,163,184,.06); color:#c7d2fe; font-weight:600;
+    }
+    .full{color:#fecaca}
+    footer{margin-top:16px; font-size:12px; color:var(--muted)}
+    small.req{color:#94a3b8; font-weight:600; margin-left:6px}
+    .disabled{opacity:.6}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Form card -->
+    <section class="card">
+      <h1>Course Registration</h1>
+      <p class="lead">Register for available courses. Prerequisites are verified automatically. Seats update in real time.</p>
+
+      <form id="regForm" novalidate>
+        <div class="grid">
+          <div>
+            <label>Student Name <small class="req">(required)</small></label>
+            <input id="name" type="text" placeholder="e.g., Priya Sharma" />
+          </div>
+          <div>
+            <label>Student ID <small class="req">(required)</small></label>
+            <input id="sid" type="text" placeholder="e.g., 24AICS0011" />
+          </div>
+          <div>
+            <label>Email <small class="req">(required)</small></label>
+            <input id="email" type="email" placeholder="e.g., priya@univ.edu" />
+          </div>
+          <div>
+            <label>Choose Course <small class="req">(required)</small></label>
+            <select id="course"></select>
+          </div>
+          <div class="checkboxes" style="grid-column:1 / -1">
+            <label style="margin-bottom:8px; color:#cbd5e1;">Completed Courses (for prerequisite check):</label>
+            <div id="completedList" style="display:grid; grid-template-columns:repeat(3,minmax(140px,1fr)); gap:8px"></div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit">Register</button>
+          <button type="button" class="muted-btn" id="resetBtn">Reset</button>
+        </div>
+        <div id="msg" class="notice"></div>
+      </form>
+      <footer>Note: This demo keeps data in memory to illustrate validation, prerequisites and capacity handling.</footer>
+    </section>
+
+    <!-- Sidebar: course info -->
+    <aside class="card sidebar">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px">
+        <h2 style="margin:0; font-size:18px">Course Details</h2>
+        <span class="pill" id="seatInfo">Select a course</span>
+      </div>
+      <div id="courseCard" class="course">
+        <div>
+          <div style="font-weight:700" id="cTitle">—</div>
+          <div class="meta">
+            <span class="pill" id="cCode">CODE</span>
+            <span class="pill" id="cPrereq">Prereqs: —</span>
+          </div>
+        </div>
+        <p id="cDesc" style="margin:0; color:#cbd5e1">Choose a course to view its description.</p>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // --- Demo dataset with capacity + prerequisites ---
+    const courses = {
+      "CS101": { title: "Programming Fundamentals", desc: "Intro to programming with JavaScript and problem solving.", prereqs: [], capacity: 3, enrolled: 0 },
+      "CS201": { title: "Data Structures", desc: "Arrays, stacks, queues, trees and graphs with complexity analysis.", prereqs: ["CS101"], capacity: 2, enrolled: 0 },
+      "CS205": { title: "Web Technologies", desc: "HTML, CSS, JavaScript and client-side validation techniques.", prereqs: ["CS101"], capacity: 2, enrolled: 0 },
+      "CS301": { title: "Algorithms", desc: "Greedy, DP and graph algorithms. Asymptotic analysis.", prereqs: ["CS201"], capacity: 1, enrolled: 0 }
+    };
+
+    // Build completed-courses checklist (use all codes)
+    const completedList = document.getElementById('completedList');
+    Object.keys(courses).forEach(code=>{
+      const id = `done_${code}`;
+      const row = document.createElement('label');
+      row.innerHTML = `<input type="checkbox" id="${id}" value="${code}"> ${code}`;
+      completedList.appendChild(row);
+    });
+
+    // Populate course select with remaining seats
+    const courseSel = document.getElementById('course');
+    function optionLabel(code){
+      const c = courses[code];
+      const remaining = c.capacity - c.enrolled;
+      return `${code} — ${c.title}  (${remaining} seat${remaining!==1?'s':''} left${remaining===0?' - FULL':''})`;
+    }
+    function refreshSelect(){
+      courseSel.innerHTML = `<option value="">-- Select --</option>`;
+      Object.keys(courses).forEach(code=>{
+        const c = courses[code];
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = optionLabel(code);
+        if(c.enrolled >= c.capacity){ opt.disabled = true; opt.classList.add('disabled'); }
+        courseSel.appendChild(opt);
+      });
+      updateSidebar(courseSel.value);
+    }
+    refreshSelect();
+
+    // Sidebar info
+    function updateSidebar(code){
+      const title = document.getElementById('cTitle');
+      const codeEl = document.getElementById('cCode');
+      const preEl = document.getElementById('cPrereq');
+      const desc = document.getElementById('cDesc');
+      const seatInfo = document.getElementById('seatInfo');
+
+      if(!code){ title.textContent='—'; codeEl.textContent='CODE'; preEl.textContent='Prereqs: —'; desc.textContent='Choose a course to view its description.'; seatInfo.textContent='Select a course'; return; }
+
+      const c = courses[code];
+      title.textContent = c.title;
+      codeEl.textContent = code;
+      preEl.textContent = `Prereqs: ${c.prereqs.length? c.prereqs.join(', ') : 'None'}`;
+      desc.textContent = c.desc;
+      const remaining = c.capacity - c.enrolled;
+      seatInfo.textContent = `${remaining} seat${remaining!==1?'s':''} left`;
+      seatInfo.classList.toggle('full', remaining===0);
+    }
+    courseSel.addEventListener('change', e=> updateSidebar(e.target.value));
+
+    // Helpers
+    const msg = document.getElementById('msg');
+    function show(type, text){
+      msg.className = `notice ${type}`; msg.textContent = text;
+    }
+    function getCompleted(){
+      return Array.from(completedList.querySelectorAll('input:checked')).map(x=>x.value);
+    }
+
+    // Validation + register
+    document.getElementById('regForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const sid  = document.getElementById('sid').value.trim();
+      const email= document.getElementById('email').value.trim();
+      const code = courseSel.value;
+
+      // Basic JS validation
+      if(!name || !sid || !email || !code){ return show('error','Please complete all required fields.'); }
+      if(!/^[A-Za-z][A-Za-z\s'.-]{1,50}$/.test(name)) return show('error','Name must contain only letters/spaces.');
+      if(!/^[A-Za-z0-9-]{4,20}$/.test(sid)) return show('error','Invalid Student ID format.');
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return show('error','Please provide a valid email address.');
+
+      // Prerequisite check
+      const done = new Set(getCompleted());
+      const c = courses[code];
+      const unmet = c.prereqs.filter(p => !done.has(p));
+      if(unmet.length){ return show('error', `Prerequisite not met: ${unmet.join(', ')}`); }
+
+      // Capacity check + auto update
+      if(c.enrolled >= c.capacity){ refreshSelect(); return show('error','Sorry, this course is already full.'); }
+
+      c.enrolled += 1; // enroll
+      refreshSelect();
+      courseSel.value = code; // keep selection
+      updateSidebar(code);
+
+      show('success', `Registered successfully for ${code} — ${c.title}. Seats remaining: ${c.capacity - c.enrolled}.`);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      document.getElementById('regForm').reset();
+      msg.className='notice'; msg.textContent=''; refreshSelect();
+    });
+  </script>
+</body>
+</html>
