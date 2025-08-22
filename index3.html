@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>jQuery Portfolio Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    :root{ --bg:#0a0f1e; --card:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#60a5fa }
+    *{box-sizing:border-box}
+    body{margin:0; min-height:100vh; background:radial-gradient(1100px 780px at 85% -10%, #0c162b 0%, var(--bg) 55%); color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif; display:flex; align-items:center; justify-content:center; padding:28px}
+    .wrap{width:min(1050px, 94vw)}
+    header{margin-bottom:16px}
+    h1{margin:0 0 6px; font-size:28px}
+    p{margin:0; color:var(--muted)}
+    .panel{
+      display:grid; grid-template-columns: 1fr 1.2fr; gap:22px; margin-top:18px;
+    }
+    .card{background:linear-gradient(180deg, #0f172a 0%, #0b1220 100%); border:1px solid rgba(148,163,184,.18); border-radius:18px; padding:18px; box-shadow:0 18px 30px rgba(2,6,23,.5)}
+    .controls{display:flex; gap:10px; margin-bottom:10px}
+    button{appearance:none; border:none; border-radius:12px; padding:10px 14px; font-weight:700; cursor:pointer; background:#0b1220; color:#dbeafe; border:1px solid rgba(148,163,184,.25)}
+    button.primary{background:linear-gradient(180deg, #60a5fa, #2563eb); color:#071225; border:none}
+    .gallery{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+    .thumb{
+      position:relative; overflow:hidden; border-radius:14px; border:1px solid rgba(148,163,184,.2);
+      background:#0b1220; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+      transition:transform .18s ease, box-shadow .18s ease;
+      box-shadow:0 10px 20px rgba(2,6,23,.45);
+    }
+    .thumb img{
+      width:100%; height:100%; object-fit:cover; opacity:.65; transform:scale(.92);
+      transition:opacity .25s ease, transform .25s ease, filter .25s ease;
+      will-change:transform, opacity;
+    }
+    .thumb.active{box-shadow:0 18px 40px rgba(59,130,246,.45)}
+    .thumb.active img{opacity:1; filter:contrast(1.05) saturate(1.05)}
+    .stage{
+      display:grid; place-items:center; min-height:380px;
+      border-radius:16px; background:repeating-linear-gradient(45deg, rgba(255,255,255,.02), rgba(255,255,255,.02) 10px, rgba(255,255,255,.04) 10px, rgba(255,255,255,.04) 20px);
+      border:1px solid rgba(148,163,184,.18)
+    }
+    .stage img{
+      max-width:86%; max-height:340px; border-radius:16px; border:1px solid rgba(148,163,184,.25);
+      box-shadow:0 24px 50px rgba(37,99,235,.35);
+      opacity:.6; transform:scale(.9);
+    }
+    .hint{margin-top:8px; font-size:12px; color:#a5b4fc}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Design Portfolio</h1>
+      <p>Click an image to select it, then press <strong>Highlight</strong> to smoothly increase its size and opacity.</p>
+    </header>
+
+    <div class="panel">
+      <section class="card">
+        <div class="controls">
+          <button class="primary" id="btnHighlight">Highlight</button>
+          <button id="btnReset">Reset</button>
+        </div>
+        <div class="gallery" id="gallery">
+          <!-- Free placeholder images -->
+          <div class="thumb"><img src="https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=800&auto=format&fit=crop" alt=""></div>
+          <div class="thumb"><img src="https://images.unsplash.com/photo-1512446816042-444d641267ee?q=80&w=800&auto=format&fit=crop" alt=""></div>
+          <div class="thumb"><img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop" alt=""></div>
+          <div class="thumb"><img src="https://images.unsplash.com/photo-1518773553398-650c184e0bb3?q=80&w=800&auto=format&fit=crop" alt=""></div>
+          <div class="thumb"><img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=800&auto=format&fit=crop" alt=""></div>
+          <div class="thumb"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=800&auto=format&fit=crop" alt=""></div>
+        </div>
+        <div class="hint">Tip: You can click any tile to choose it. Highlight grows the selected image on the big preview.</div>
+      </section>
+
+      <aside class="card stage">
+        <img id="stageImg" src="https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=1200&auto=format&fit=crop" alt="Selected artwork">
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const $gallery = $('#gallery');
+    const $stage   = $('#stageImg');
+
+    // Select a thumbnail by click
+    $gallery.on('click','.thumb', function(){
+      $('.thumb').removeClass('active');
+      $(this).addClass('active');
+      const src = $(this).find('img').attr('src');
+      // swap stage image immediately with gentle fade
+      $stage.stop(true,true).animate({opacity:0.3}, 150, function(){
+        $stage.attr('src', src).animate({opacity:0.6}, 200);
+      });
+    });
+
+    // Highlight animation: smoothly increase opacity & size
+    $('#btnHighlight').on('click', function(){
+      const $active = $('.thumb.active img');
+      if(!$active.length) { $gallery.find('.thumb').first().click(); } // auto-select first
+      // animate stage image
+      $stage.stop(true,true)
+            .animate({opacity: 1}, 400, 'swing')
+            .animate({width: '+=40', height: '+=40'}, 300)  // micro nudge to trigger layout
+            .animate({width: '-=40', height: '-=40'}, 0);   // revert size holders
+
+      // animate the active thumbnail (visual feedback)
+      const $tile = $('.thumb.active img');
+      $tile.stop(true,true)
+           .animate({opacity: 1}, 350, 'swing')
+           .css({transform:'scale(.92)'})
+           .animate({width:'+=8', height:'+=8'}, 160)
+           .animate({width:'-=8', height:'-=8'}, 0);
+    });
+
+    // Reset everything
+    $('#btnReset').on('click', function(){
+      $('.thumb').removeClass('active');
+      $stage.stop(true,true).animate({opacity:.6}, 200).css({transform:'scale(.9)'});
+    });
+
+    // Default select first
+    $gallery.find('.thumb').first().addClass('active');
+  </script>
+</body>
+</html>
