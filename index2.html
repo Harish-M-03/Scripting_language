@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>4-Digit Number Validator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{ --bg:#0b1220; --card:#0f172a; --text:#e5e7eb; --muted:#94a3b8; --accent:#22d3ee; --danger:#ef4444; --success:#22c55e }
+    *{box-sizing:border-box}
+    body{margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(1000px 700px at 15% -10%, #0b1220 0%, #05080f 60%); color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif; padding:28px}
+    .card{width:min(560px, 92vw); background:linear-gradient(180deg, #0f172a 0%, #0b1220 100%); border:1px solid rgba(148,163,184,.18); border-radius:18px; padding:24px; box-shadow:0 20px 30px rgba(2,6,23,.5)}
+    h1{margin:0 0 6px; font-size:26px}
+    p{margin:0 0 16px; color:var(--muted)}
+    .field{display:flex; gap:12px}
+    input{
+      flex:1; padding:14px 16px; border-radius:14px; border:1px solid rgba(148,163,184,.22); background:#0b1220; color:var(--text); font-size:18px; letter-spacing:2px; text-align:center;
+      outline:none; transition:box-shadow .2s,border .2s;
+    }
+    input:focus{border-color:var(--accent); box-shadow:0 0 0 6px rgba(34,211,238,.3)}
+    button{padding:12px 16px; border-radius:14px; border:1px solid rgba(148,163,184,.25); background:#0b1220; color:#dbeafe; cursor:pointer; font-weight:700}
+    button.primary{background:linear-gradient(180deg, #22d3ee, #0891b2); color:#062029; border:none}
+    .msg{margin-top:14px; padding:12px 14px; border-radius:12px; display:none}
+    .msg.error{display:block; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.35); color:#fecaca}
+    .msg.ok{display:block; background:rgba(34,197,94,.12); border:1px solid rgba(34,197,94,.35); color:#bbf7d0}
+    .hint{margin-top:10px; font-size:13px; color:#a5b4fc}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>4-Digit Number Validation</h1>
+    <p>Rules: <strong>no leading zero</strong> and digits must be in <strong>strictly ascending</strong> order (e.g., 1234, 5678).</p>
+
+    <div class="field">
+      <input id="num" maxlength="4" placeholder="####" inputmode="numeric" />
+      <button class="primary" id="validateBtn">Validate</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+
+    <div id="msg" class="msg"></div>
+    <div class="hint">Tip: typing non-digits is blocked automatically.</div>
+  </div>
+
+  <script>
+    const input = document.getElementById('num');
+    const msg = document.getElementById('msg');
+
+    // Block non-digits
+    input.addEventListener('input', e=>{
+      e.target.value = e.target.value.replace(/\D+/g,'').slice(0,4);
+    });
+
+    function show(type, text){ msg.className = 'msg ' + type; msg.textContent = text; }
+
+    function validate(){
+      const s = input.value;
+      if(!/^\d{4}$/.test(s)) return show('error','Please enter exactly 4 digits.');
+      if(s[0]==='0') return show('error','First digit cannot be zero.');
+      for(let i=0;i<3;i++){ if(!(s[i] < s[i+1])) return show('error','Digits must be in strictly ascending order.'); }
+      show('ok', `Valid number: ${s}`);
+    }
+
+    document.getElementById('validateBtn').addEventListener('click', validate);
+    document.getElementById('clearBtn').addEventListener('click', ()=>{ input.value=''; msg.className='msg'; msg.textContent=''; input.focus(); });
+  </script>
+</body>
+</html>
